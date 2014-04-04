@@ -11,15 +11,13 @@ Uses SdFatLib
 
 Limitations
 -----------
-Setup to run off a 16Mhz crystal
+Setup to run off a 16Mhz crystal.
 
-Wav files must be 16Khz 8bit mono 
-  8Khz or 32Khz could probably be made to work
+Wav files must be 16Khz 8bit mono. 8Khz or 32Khz could probably be made to work
   
-The wave file header is played
-  Can probably fix this by skipping ahead a fixed number of bytes
+The wave file header is played. Can probably fix this by skipping ahead a fixed number of bytes
 
-Folders not supported
+Folders not supported.
 
 Usage
 -----
