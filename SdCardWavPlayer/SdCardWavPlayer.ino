@@ -12,11 +12,17 @@
 const uint8_t spiSpeed = SPI_FULL_SPEED;// SPI_HALF_SPEED;
 
 const int ledPin = 2;
+const int swPwm1Pin = 4;
+const int swPwm2Pin = 5;
+const int swPwm3Pin = 6;
+const int swPwm4Pin = 7;
+const int swPwm5Pin = 7;
+const int swPwm6Pin = 7;
 uint8_t pwmCounter = 0;
 
 #define AUDIOBUFFER_LEN 256
 #define AUDIOBUFFER_MASK 0xFF
-#define AUDIOBUFFER_CHUNK 16
+#define AUDIOBUFFER_CHUNK 64
 
 uint8_t audioBuffer[AUDIOBUFFER_LEN];
 int16_t audioBufferBegin = 0;
@@ -56,6 +62,9 @@ void reformatMsg() {
   cout << pstr("and use SDFormatter from www.sdcard.org/consumer.\n");
 }
 
+uint16_t pwmTick = 0;
+uint16_t swPwms[6];
+
 uint8_t testCounter = 0;
 ISR(TIMER2_OVF_vect)        // interrupt service routine 32Khz
 {
@@ -64,9 +73,27 @@ ISR(TIMER2_OVF_vect)        // interrupt service routine 32Khz
   //testCounter++;
   //OCR2B = testCounter;
   
+  pwmTick++;
+  if (pwmTick > 640)
+    pwmTick = 0;
+  
+    digitalWrite(swPwm1Pin, (pwmTick < swPwms[0])?1:0 );
+    digitalWrite(swPwm2Pin, (pwmTick < swPwms[1])?1:0 );
+    digitalWrite(swPwm3Pin, (pwmTick < swPwms[2])?1:0 );
+    
+    /*
+  if (pwmTick < swPwm1)
+    digitalWrite(swPwm1Pin, 1);
+  else
+    digitalWrite(swPwm1Pin, 0);
+  */
   if (pwmCounter == 0)
   {
     //TCNT1 = timer1_counter;   // preload timer
+    
+    digitalWrite(swPwm4Pin, (pwmTick < swPwms[4])?1:0 );
+    digitalWrite(swPwm5Pin, (pwmTick < swPwms[5])?1:0 );
+    
     
   }
   else
@@ -90,8 +117,26 @@ void setup()
   Serial.begin(9600);
   while (!Serial) {}  // wait for Leonardo
   
+  swPwms[0] = 32;
+  swPwms[1] = 32;
+  swPwms[2] = 32;
+  swPwms[3] = 32;
+  swPwms[4] = 32;
+  swPwms[5] = 32;
+  
+  pinMode(swPwm1Pin, OUTPUT);
+  pinMode(swPwm2Pin, OUTPUT);
+  pinMode(swPwm3Pin, OUTPUT);
+  pinMode(swPwm4Pin, OUTPUT);
+  pinMode(swPwm5Pin, OUTPUT);
+  pinMode(swPwm6Pin, OUTPUT);
   pinMode(ledPin, OUTPUT);
   pinMode(3, OUTPUT);
+
+  pinMode(A0, OUTPUT);
+  pinMode(A1, OUTPUT);
+  pinMode(A2, OUTPUT);
+  pinMode(A3, OUTPUT);
   
   // initialize timer1 
   noInterrupts();           // disable all interrupts
@@ -105,6 +150,7 @@ void setup()
   TCNT2 = 123;
   interrupts();             // enable all interrupts
 }
+
 
 #define SERIALBUFFER_SIZE 40
 char serialBuffer[SERIALBUFFER_SIZE];
@@ -251,7 +297,17 @@ serialBufferLen = 0;
           
           isPlaying = true;
         }  
+        
+        if ((serialBuffer[0] >= 'a') && (serialBuffer[0] <= 'e'))
+        {
+          swPwms[serialBuffer[0] - 'a'] = 16 + ((serialBuffer[1] - '0') * 10) + (serialBuffer[2] - '0');
+        }  
   
+        if ((serialBuffer[0] >= 'A') && (serialBuffer[0] <= 'G'))
+        {
+           digitalWrite(A0 + (serialBuffer[0] - 'A'), (serialBuffer[1] - '0')); 
+        }
+        
         serialBufferLen = 0;
       }
       
