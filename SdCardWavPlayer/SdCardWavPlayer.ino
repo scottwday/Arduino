@@ -114,7 +114,7 @@ ISR(TIMER2_OVF_vect)        // interrupt service routine 32Khz
 
 void setup() 
 {
-  Serial.begin(9600);
+  Serial.begin(115200);
   while (!Serial) {}  // wait for Leonardo
   
   swPwms[0] = 32;
@@ -123,13 +123,13 @@ void setup()
   swPwms[3] = 32;
   swPwms[4] = 32;
   swPwms[5] = 32;
-  
-  pinMode(swPwm1Pin, OUTPUT);
-  pinMode(swPwm2Pin, OUTPUT);
-  pinMode(swPwm3Pin, OUTPUT);
-  pinMode(swPwm4Pin, OUTPUT);
-  pinMode(swPwm5Pin, OUTPUT);
-  pinMode(swPwm6Pin, OUTPUT);
+
+  //pinMode(swPwm1Pin, OUTPUT);
+  //pinMode(swPwm2Pin, OUTPUT);
+  //pinMode(swPwm3Pin, OUTPUT);
+  //pinMode(swPwm4Pin, OUTPUT);
+  //pinMode(swPwm5Pin, OUTPUT);
+  //pinMode(swPwm6Pin, OUTPUT);
   pinMode(ledPin, OUTPUT);
   pinMode(3, OUTPUT);
 
@@ -157,7 +157,7 @@ char serialBuffer[SERIALBUFFER_SIZE];
 uint8_t serialBufferLen;
 
 char audioFile[12];
-#define DEFAULTFILE "B816.WAV"
+#define DEFAULTFILE "0.WAV"
 char* defaultFile = DEFAULTFILE;
 
 bool firstTry = true;
@@ -269,12 +269,15 @@ serialBufferLen = 0;
     {
       if (data != '\n')
       {
-        if (serialBufferLen < SERIALBUFFER_SIZE)
+        if (data != '\r')
         {
-          serialBuffer[serialBufferLen] = (char)data;
-          serialBufferLen++;
-          
-          //cout << (int)data << ' ' << (char)data << '\n';
+          if (serialBufferLen < SERIALBUFFER_SIZE)
+          {
+            serialBuffer[serialBufferLen] = (char)data;
+            serialBufferLen++;
+            
+            //cout << (int)data << ' ' << (char)data << '\n';
+          }
         }
       }
       else
@@ -283,6 +286,7 @@ serialBufferLen = 0;
         {
           for (data = 0; data < serialBufferLen-1; data++)
             audioFile[data] = serialBuffer[data+1];
+            
           audioFile[serialBufferLen - 1] = '.';
           audioFile[serialBufferLen + 0] = 'W';
           audioFile[serialBufferLen + 1] = 'A';
@@ -307,6 +311,11 @@ serialBufferLen = 0;
         {
            digitalWrite(A0 + (serialBuffer[0] - 'A'), (serialBuffer[1] - '0')); 
         }
+
+        if ((serialBuffer[0] >= '0') && (serialBuffer[0] <= '5'))
+        {
+           pinMode(swPwm1Pin + (serialBuffer[0] - '0'), (serialBuffer[1] - '0')); 
+        }
         
         serialBufferLen = 0;
       }
@@ -318,8 +327,6 @@ serialBufferLen = 0;
 
   myFile.close();
   root.close();
-  
-  
 
   // read any existing Serial data
   while (Serial.read() >= 0) {}
